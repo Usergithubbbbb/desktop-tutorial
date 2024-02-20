@@ -1,0 +1,1198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Web Mapping Application</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/css/main.css">
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js"></script>
+  <link href="https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.2/dist/echarts.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js" integrity="sha512-k37wQcV4v2h6jgYf5IUz1MoSKPpDs630XGSmCaCCOXxy2awgAWKHGZWr9nMyGgk3IOxA1NxdkN8r1JHgkUtMoQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css" />
+
+  <style>
+     body {
+         font-size: 16px
+        }
+
+        #chartControls label,
+        #chartControls select,
+        #chartControls button {
+            font-size: 16px;
+            margin-bottom: 15px
+        }
+
+    html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+
+
+    #mainMenu {
+      position: absolute;
+      top: 10px;
+      left: 60px;
+      z-index: 4;
+      background-color: rgba(53, 51, 51, 0.8);
+      padding: 8px;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #mainMenu label {
+      margin-bottom: 5px;
+    }
+
+    #mainMenu button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    #main-menu {
+      width: 20%;
+      height: 100%;
+      background-color: #2c3e50;
+      color: rgb(91, 89, 89);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+    }
+
+    #container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+      flex-direction: row; */ update to column layout */
+    }
+
+    #main {
+
+      width: 60%;
+      height: 60%;
+      position:relative;
+      top: 36%;
+
+      z-index: 1;
+
+    }
+
+    /* responsive */
+    #main canvas {
+      width: 100%;
+      height: 100%; 
+    }
+
+
+    #viewDiv {
+
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top:0;
+      right:0;
+
+    }
+
+    #spaceTimeCubeContainer {
+      display: none;
+    }
+
+    .legend-building {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      padding: 5px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 5px;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .legend {
+    position: relative;
+    top: 72%;
+    left: 51%;
+
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 3px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+
+    .legend-item div {
+      align-items: relative;
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+    }
+
+    #chartControls {
+      position: absolute;
+      top: 34px;
+      left: 20px;
+      z-index: 3;
+    }
+#plotlyContainer {
+  height: 100vh;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  top: 2%;
+  right:100;
+  width: 100%;
+  z-index: 3;
+}
+
+.dark-popup-content {
+  color: #232020;
+  background-color: #171515; /* to dark gray */
+}
+
+#usage-pie-chart {
+      display: none;
+      width: 400px;
+      height: 300px;
+      z-index: 0;
+      position: absolute;
+      top:0%;
+      right: 0%;
+      bottom:0%;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div id="container">
+
+
+    <div id="main"></div>
+    <div id="viewDiv"></div>
+    <div id="timeSlider"></div>
+    <div id="usage-pie-chart"></div>
+
+
+    <div class="legend-building"></div>
+    <div id="spaceTimeCubeContainer">
+      <div id="plotlyContainer"></div>
+
+    </div>
+  </div>
+
+    </div>
+  </div>
+  </div>
+
+
+  </div>
+  <div id="mainMenu">
+    <label for="measurementType">Select Measurement Type:</label>
+    <select id="measurementType">
+      <option value="temperature">Temperature °C</option>
+      <option value="humidity">Humidity %</option>
+      <option value="illuminance">Illuminance in Lux</option>
+    </select>
+
+    <label for="chartType">Select Chart Type:</label>
+    <select id="chartType">
+      <option value="line">Line Chart</option>
+      <option value="bar">Bar Chart</option>
+    </select>
+
+
+
+    <button id="loadDatastream">Load Datastream</button>
+    <button id="toggleSpaceTime">Bus Space-Time Visualization</button>
+
+    <button id="toggle3DButton">3D City Building</button>
+
+
+  </div>
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js"></script>
+
+
+  <script src="https://js.arcgis.com/4.28/"></script>
+<script>
+
+    const data = [
+
+    ];
+
+    //to ensure if plotly and mapbox are loaded
+    if (window.Plotly && window.L) {
+
+    document.getElementById("loadDatastream").addEventListener("click", function () {
+      var selectedMeasurementType = document.getElementById("measurementType").value;
+      var selectedChartType = document.getElementById("chartType").value;
+
+
+
+
+      // Mapping from sensor location to their corresponding Datastream id
+      var datastreamIds = {
+        "Co-working": {
+          illuminance: 7,
+          temperature: 8,
+          humidity: 9
+        },
+        "Eaves": {
+          illuminance: 1,
+          temperature: 2,
+          humidity: 3
+        },
+        "Cafeteria": {
+          illuminance: 4,
+          temperature: 5,
+          humidity: 6
+        }
+      };
+
+      //adding color for each
+      var locationColors = {
+        "Co-working": 'orange',
+        "Eaves": '#229954',
+        "Cafeteria": '#355EC2'
+      };
+
+      var resultData = [];
+
+      Object.entries(datastreamIds).forEach(([location, types]) => {
+        var datastreamId = types[selectedMeasurementType];
+        var datastreamUrl = "https://ogcapi.hft-stuttgart.de/sta/udigit4icity/v1.1/Datastreams(" + datastreamId + ")/Observations?$select=result,phenomenonTime&$top=10000";
+
+        fetch(datastreamUrl)
+          .then(response => response.json())
+          .then(data => {
+            var locationData = data.value
+              .filter(item => item.result !== null && item.result >= 1)
+              .map(item => ({
+                phenomenonTime: new Date(item.phenomenonTime),
+                result: item.result
+              }));
+
+            resultData.push({
+              location: location,
+              data: locationData
+            });
+
+            if (resultData.length === Object.keys(datastreamIds).length) {
+              createChart(resultData, selectedMeasurementType, selectedChartType, locationColors);
+            }
+          })
+          .catch(error => {
+            console.error("Error loading data:", error);
+          });
+      });
+    });
+
+    function createChart(resultData, selectedMeasurementType, selectedChartType, locationColors) {
+      var chartDom = document.getElementById('main');
+      var myChart = echarts.init(chartDom);
+
+      myChart.setOption({
+        backgroundColor: 'dark-gray',
+        title: {
+          text: ' Data Stream Result Observing ' + selectedMeasurementType.charAt(0).toUpperCase() + selectedMeasurementType.slice(1),
+
+          left: 'center',
+          textStyle: {
+            color: 'white',
+            fontSize: 20,
+          },
+
+        },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          formatter: function (params) {
+            var timestamp = new Date(params[0].value[0]);
+            var formattedTime = timestamp.toLocaleString();
+            var tooltip = 'Timestamp: ' + formattedTime + '<br>';
+            params.forEach(function (item) {
+              tooltip += item.seriesName + ': ' + item
+                .value[1] + '<br>';
+            });
+            return tooltip;
+          },
+        },
+        grid: {
+          left: '4%',
+          right: '15%',
+          top: '10%',
+          bottom: '10%',
+
+        },
+        xAxis: {
+          name: 'Date Time',
+          type: 'time',
+          boundaryGap: false,
+          axisLabel: {
+            color: 'green',
+            fontSize: 18,
+          },
+        },
+        yAxis: {
+          name: selectedMeasurementType.charAt(0).toUpperCase() + selectedMeasurementType.slice(1),
+          axisLabel: {
+            color: 'red',
+            fontSize: 19,
+          },
+        },
+        series: resultData.map(locationData => ({
+          name: locationData.location,
+          type: selectedChartType,
+          data: locationData.data.map(item => [item.phenomenonTime, item.result]),
+          itemStyle: {
+            color: locationColors[locationData.location],
+            emphasis: {
+              color: 'white',
+              fontWeight: 'bold',
+            },
+          },
+        })),
+        legend: {
+          data: resultData.map(locationData => locationData.location),
+          right: 10,
+          bottom: 10,
+          textStyle: {
+            fontSize: 14,
+            color: 'white',
+          },
+          emphasis: {
+            textStyle: {
+              fontSize: 14,
+              color: 'black',
+              fontWeight: 'bold',
+            },
+            backgroundColor: 'white',
+          },
+        },
+        dataZoom: [
+          {
+            type: 'slider',
+            xAxisIndex: [0],
+            startValue: resultData[0].data[0].phenomenonTime,
+            endValue: resultData[0].data[resultData[0].data.length - 1].phenomenonTime,
+            zoomLock: false,
+            showDetail: false,
+            top:'92%'
+          },
+          {
+            type: 'inside',
+            xAxisIndex: [0],
+          },
+        ],
+        toolbox: {
+          feature: {
+            dataZoom: {
+              show: true,
+            },
+            dataView: {
+              show: true,
+            },
+            saveAsImage: {
+              show: true,
+            },
+          },
+        },
+      });
+
+      // adding legend items dynamically
+      var legend = document.querySelector('.legend');
+      legend.innerHTML = '';
+      Object.keys(locationColors).forEach(location => {
+        var color = locationColors[location];
+        var legendItem = createLegendItem(color, location, location);
+        legend.appendChild(legendItem);
+      });
+    }
+
+
+
+
+    function createLegendItem(color, label, id) {
+      const legendItem = document.createElement("div");
+      legendItem.className = "legend-item";
+      legendItem.id = id;
+      legendItem.innerHTML = `
+        <div style="background-color: ${color};"></div>
+        <span>${label}</span>
+      `;
+      return legendItem;
+    }
+
+    function createBuildingLegendItem(color, label, id) {
+   const legendItem = document.createElement("div");
+   legendItem.className = "legend-item";
+   legendItem.id = id;
+   legendItem.innerHTML = `
+      <div style="background-color: ${color};"></div>
+      <span>${label}</span>
+   `;
+   return legendItem;
+    }
+
+    // To animating space-time routes directly
+    animateSpaceTimeRoutes('https://ogcapi.hft-stuttgart.de/ogc_api_moving_features/collections/bus_1/items');
+       function animateSpaceTimeRoutes(url) {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (!data || !data.features) {
+            console.error('Invalid data format:', data);
+            return;
+          }
+
+          const frames = data.features.map((feature, index) => {
+            const coordinates = feature.geometry.coordinates;
+            const timestamps = feature.properties.datetimes;
+
+            if (!Array.isArray(coordinates) || !Array.isArray(timestamps)) {
+              console.error('Invalid feature format:', feature);
+              return;
+            }
+
+            return {
+              data: [
+                {
+                  type: 'scattermapbox',
+                  lat: coordinates.map(coord => coord[1]),
+                  lon: coordinates.map(coord => coord[0]),
+                  mode: 'lines+markers',
+                  marker: { size: 6, color: 'black' },
+                  line: { color: 'black' },
+                  name: 'Bus route',
+                },
+                {
+                  type: 'scatter3d',
+                  x: coordinates.map(coord => coord[0]),
+                  y: coordinates.map(coord => coord[1]),
+                  z: timestamps.map((time, i) => new Date(time).toISOString()),
+
+                  mode: 'lines+markers',
+                  line: { color: 'dark' },
+                  name: 'Bus trajectory line',
+                },
+              ],
+              name: `frame${index + 1}`,
+            };
+          });
+
+                    // to set the layout with mapbox _ access token
+
+const layout = {
+  mapbox: {
+    style: 'light',
+    center: { lon: frames[0].data[0].lon[0], lat: frames[0].data[0].lat[0] },
+    zoom: 10,
+    accesstoken: 'pk.eyJ1IjoicmVkaWV0OTk2MyIsImEiOiJjbHJ1cmk5aGUwaDRvMmpuYWM4Z2NqcmZuIn0.c11HYT-5ucd6g6mL03bp3Q', // Mapbox access token
+  },
+  margin: { t: 0, b: 0, l: 0, r: 0 },
+  scene: {
+    xaxis: {
+      title: 'X Axis',
+      titlefont: {
+        family: 'Arial, sans-serif',
+        size: 15,
+        color: 'black'
+      },
+      tickfont: {
+        family: 'Arial, sans-serif',
+        size: 15,
+        color: 'black',
+        bold: true
+      }
+    },
+    yaxis: {
+      title: 'Y Axis',
+      titlefont: {
+        family: 'Arial, sans-serif',
+        size: 15,
+        color: 'black'
+      },
+      tickfont: {
+        family: 'Arial, sans-serif',
+        size: 15,
+        color: 'black',
+        bold: true
+      }
+    },
+    zaxis: {
+      title: 'Time',
+      titlefont: {
+        family: 'Arial, sans-serif',
+        size: 16,
+        color: 'black'
+      },
+      tickfont: {
+        family: 'Arial, sans-serif',
+        size: 15,
+        color: 'black',
+        bold: true
+      }
+    },
+    // Common font settings for both
+    font: {
+      family: 'Arial, sans-serif',
+      size: 12,
+      color: 'black',
+      bold: true
+    }
+  }
+};
+
+          // Initialize Plotly container
+          Plotly.newPlot('plotlyContainer', frames[0].data, layout);
+          Plotly.addFrames('plotlyContainer', frames);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    }
+
+    // Function to toggle space-time visualization
+      document.getElementById("toggleSpaceTime").addEventListener("click", function () {
+        const plotlyContainer = document.getElementById("plotlyContainer");
+        plotlyContainer.style.display = plotlyContainer.style.display === "none" ? "block" : "none";
+      });
+    } else {
+      console.error("Plotly or Mapbox not loaded. Check if the libraries are loaded correctly.");
+    }
+
+function loadHistoricalRoutes() {
+  // to fetch historical data and update the scene layer
+  animateHistoricalMovingFeatures('https://ogcapi.hft-stuttgart.de/ogc_api_moving_features/collections/bus_1/items', [226, 119, 40], 'Bus', 'Bus', 'busLegend');
+}
+
+
+
+</script>
+
+  <script>
+    require([
+  "esri/Map",
+  "esri/views/SceneView",
+  "esri/layers/SceneLayer",
+  "esri/layers/FeatureLayer",
+  "esri/Graphic",
+  "esri/geometry/Polyline",
+  "esri/geometry/Point",
+  "esri/symbols/WebStyleSymbol",
+  "esri/symbols/SimpleLineSymbol",
+  "esri/layers/GraphicsLayer",
+  "esri/request",
+  "esri/renderers/UniqueValueRenderer",
+  "esri/renderers/SimpleRenderer",
+  "esri/symbols/SimpleMarkerSymbol",
+  "esri/PopupTemplate"
+], function (Map, SceneView, SceneLayer, FeatureLayer, Graphic, Polyline, Point, WebStyleSymbol, SimpleLineSymbol, GraphicsLayer, esriRequest, UniqueValueRenderer, SimpleRenderer, SimpleMarkerSymbol, PopupTemplate) {
+
+      const map = new Map({
+        basemap: "dark-gray-vector"
+      });
+
+      const view = new SceneView({
+        container: "viewDiv",
+        map: map,
+        camera: {
+          position: {
+            x: 130.5180055250,
+            y: 33.7766570370,
+            z: 25000,
+            spatialReference: {
+              wkid: 4326
+            }
+          },
+          heading: 0,
+          tilt: 0
+        },
+        environment: {
+          atmosphereEnabled: false, // clearer view
+          lighting: {
+            directShadowsEnabled: true,
+
+          }
+        }
+      });
+
+const webStyleSymbol = new WebStyleSymbol({
+  name: "Telecom",
+  styleName: "EsriIconsStyle"
+});
+
+const popupTemplate = new PopupTemplate({
+  title: "{title}", // dynamic titles
+  content: `
+    <table >
+      <tr>
+        <th>Datastream Description</th>
+        <td>{Datastream_Description}</td>
+      </tr>
+      <tr>
+        <th>Datastream ID</th>
+        <td>{Datastream_ID}</td>
+      </tr>
+      <tr>
+        <th>Date</th>
+        <td>{Date}</td>
+      </tr>
+      <tr>
+        <th>Latitude</th>
+        <td>{Latitude}</td>
+      </tr>
+      <tr>
+        <th>Longitude</th>
+        <td>{Longitude}</td>
+      </tr>
+      <tr>
+        <th>observedArea</th>
+        <td>{observedArea}</td>
+      </tr>
+      <tr>
+        <th>Result</th>
+        <td>{Result}</td>
+      </tr>
+
+    </table>
+  `
+});
+
+const featureLayer1 = new FeatureLayer({
+  url: "https://services.arcgis.com/1lplwYilIlo008hQ/arcgis/rest/services/Datastreams_observation_xy/FeatureServer",
+  renderer: new SimpleRenderer({
+    symbol: webStyleSymbol // specified symbol
+  }),
+  popupTemplate: popupTemplate,
+  outFields: ["*"] // …include all fields
+});
+
+
+map.add(featureLayer1);
+
+const featureLayer2 = new FeatureLayer({
+  url: "https://services.arcgis.com/1lplwYilIlo008hQ/arcgis/rest/services/Munakata_City_Road/FeatureServer",
+  renderer: new SimpleRenderer({
+    symbol: new SimpleLineSymbol({
+      color: '#7DF9FF',
+      width: 0.1
+    })
+  }),
+  outFields: ["*"],
+});
+
+map.add(featureLayer2);
+
+      // Adding hosted 3D building layer
+      const hostedLayer = new SceneLayer({
+        url: "https://tiles.arcgis.com/tiles/1lplwYilIlo008hQ/arcgis/rest/services/Munakata_City_Building_0h/SceneServer",
+        renderer: new UniqueValueRenderer({
+          field: "usage", // actual usage name
+          defaultSymbol: {
+            type: "mesh-3d",
+            symbolLayers: [
+              {
+                type: "fill",
+                material: {
+                  color: [253, 127, 111, 1] // #fd7f6fff
+                }
+              }
+            ]
+          },
+          uniqueValueInfos: [
+            {
+              value: "文教厚生施設",
+              symbol: {
+                type: "mesh-3d",
+                symbolLayers: [
+                  {
+                    type: "fill",
+                    material: {
+                      color:'#FF6384',
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              value: "商業施設",
+              symbol: {
+                type: "mesh-3d",
+                symbolLayers: [
+                  {
+                    type: "fill",
+                    material: {
+                      color: "#347fb3"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              value: "共同住宅",
+              symbol: {
+                type: "mesh-3d",
+                symbolLayers: [
+                  {
+                    type: "fill",
+                    material: {
+                      color: "#FFCE56",
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              value: "工場",
+              symbol: {
+                type: "mesh-3d",
+                symbolLayers: [
+                  {
+                    type: "fill",
+                    material: {
+                      color: "#4BC0C0",
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              value: "Other",
+              symbol: {
+                type: "mesh-3d",
+                symbolLayers: [
+                  {
+                    type: "fill",
+                    material: {
+                      color: "#9966FF",
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              value: "住宅",
+              symbol: {
+                type: "mesh-3d",
+                symbolLayers: [
+                  {
+                    type: "fill",
+                    material: {
+                      color: "#b57433",
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              value: "業務施設",
+              symbol: {
+                type: "mesh-3d",
+                symbolLayers: [
+                  {
+                    type: "fill",
+                    material: {
+                      color:"#3ca33c",
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              value: "農林漁業用施設",
+              symbol: {
+                type: "mesh-3d",
+                symbolLayers: [
+                  {
+                    type: "fill",
+                    material: {
+                      color: "#FF99CC",
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              value:"運輸倉庫施設",
+          symbol: {
+            type: "mesh-3d",
+            symbolLayers: [
+              {
+                type: "fill",
+                material: {
+                  color: "#BDBDBD",
+                }
+              }
+            ]
+          }
+        },
+        ]
+      }),
+      elevationInfo: {
+          "mode": "on-the-ground",
+
+  "offset": 20,
+  "featureExpressionInfo": {
+    "expression": "$feature.ELEVATION_Meters"
+  },
+  "unit": "meters"
+      },
+      visible: false // 3D building initially hidden
+      });
+
+  map.add(hostedLayer);
+
+// Building usage data
+const buildingUsageData = [
+  { usage: "Educational facilities", count: 100 },
+  { usage: "Commercial Facilities", count: 200 },
+  { usage: "Apartment house", count: 150 },
+  { usage: "Factory", count: 75 },
+  { usage: "Other", count: 50 },
+  { usage: "Residential", count: 300 },
+  { usage: "Business facility", count: 180 },
+  { usage: "Agriculture, Forestry and Fishing Facilities", count: 90 },
+  { usage: "Transportation warehouse facilities", count: 120 }
+];
+
+// Extract labels, counts, and colors
+const labels = buildingUsageData.map(item => item.usage);
+const counts = buildingUsageData.map(item => item.count);
+const colors = ["#FF6384",
+  '#347fb3','#FFCE56','#4BC0C0','#9966FF','#b57433','#3ca33c','#FF99CC','#BDBDBD'
+];
+
+// Create the pie chart using ECharts
+const pieChartContainer = document.getElementById("usage-pie-chart");
+const usagePieChart = echarts.init(pieChartContainer);
+
+const options = {
+  title: {
+        text: 'Building Usage'
+      },
+  tooltip: {
+    trigger: 'item',
+    formatter: function(params, ticket, callback) {
+      const dataIndex = params.dataIndex;
+      const totalUsage = counts.reduce((acc, cur) => acc + cur, 0);
+      const percentage = ((counts[dataIndex] / totalUsage) * 100).toFixed(2);
+      return `${params.name}: ${params.value} (${percentage}% of total: ${totalUsage})`;
+    }
+  },
+  series: [{
+    type: 'pie',
+    data: buildingUsageData.map((item, index) => ({
+      name: item.usage,
+      value: item.count
+    })),
+    itemStyle: {
+      color: (params) => colors[params.dataIndex]
+    }
+  }]
+};
+
+usagePieChart.setOption(options);
+
+
+// Function to toggle 3D building and pie chart visibility
+document.getElementById("toggle3DButton").addEventListener("click", function () {
+    // Toggle 3D building layer visibility
+    hostedLayer.visible = !hostedLayer.visible;
+
+    // Toggle pie chart visibility based on 3D building visibility
+    const pieChartContainer = document.getElementById("usage-pie-chart");
+    const echartContainer = document.getElementById("main");
+    const legendContainer = document.querySelector('.legend');
+    const currentDisplay = pieChartContainer.style.display;
+    const loadDatastreamButton = document.getElementById("loadDatastream");
+
+    if (hostedLayer.visible) {
+        // If 3D building is visible, show the pie chart
+        pieChartContainer.style.display = "block";
+        echartContainer.style.display = "none";
+        legendContainer.style.display = "none";
+    } else {
+        // If 3D building is hidden, hide the pie chart
+        pieChartContainer.style.display = "none";
+        echartContainer.style.display = "block";
+        legendContainer.style.display = "block";
+    }
+});
+
+
+
+
+
+
+
+  const graphicsLayer = new GraphicsLayer();
+  map.add(graphicsLayer);
+
+function updatePopupContent(thingId, newData) {
+  const graphic = IoTGraphics.find(item => item.thingId === thingId);
+
+  if (graphic) {
+    // updating the popup content
+    graphic.graphic.popupTemplate.content = `New Content: ${newData}`;
+  }
+}
+
+function createSymbol(styleName) {
+    return new WebStyleSymbol({
+        name: styleName,
+        styleName: "EsriIconsStyle"
+    });
+}
+
+function createCallout(point, symbol, height, time) {
+    const iconGraphic = new Graphic({
+        geometry: point,
+        symbol: symbol,
+        attributes: {
+            time: time
+        },
+        popupTemplate: {
+            title: "Time",
+            content: "{time}"
+        }
+    });
+
+    graphicsLayer.add(iconGraphic); // adds graphic to layer
+}
+
+
+function animateMovingFeatures(url, styleName, legendLabel, id, height) {
+    esriRequest(url, { responseType: "json" })
+        .then(response => {
+            const features = response.data.features;
+            const coordinates = features.reduce((acc, curr) => acc.concat(curr.geometry.coordinates), []);
+            const datetimes = features.reduce((acc, curr) => acc.concat(curr.properties.datetimes), []);
+
+            const symbol = createSymbol(styleName); // Create symbol once
+            let currentPoint = 0;
+            let movingFeatureGraphic;
+
+            // To animate moving features
+            const animationInterval = setInterval(() => {
+                if (currentPoint < coordinates.length) {
+                    const [longitude, latitude, featureHeight] = coordinates[currentPoint];
+                    const time = new Date(datetimes[currentPoint]).toLocaleString();
+
+                    const movingFeaturePoint = new Point({
+                        x: longitude,
+                        y: latitude,
+                        z: 0,
+                        spatialReference: {
+                            wkid: 4326
+                        }
+                    });
+
+                    if (!movingFeatureGraphic) {
+                        // Create the moving feature graphic for the first time
+                        movingFeatureGraphic = new Graphic({
+                            geometry: movingFeaturePoint,
+                            symbol: symbol,
+                            attributes: {
+                                time: time
+                            },
+                            popupTemplate: {
+                                title: "Time",
+                                content: "{time}"
+                            }
+                        });
+                        graphicsLayer.add(movingFeatureGraphic);
+                    } else {
+                        // Update the position of the existing moving feature graphic
+                        movingFeatureGraphic.geometry = movingFeaturePoint;
+                        movingFeatureGraphic.attributes.time = time;
+                    }
+
+                    currentPoint++;
+                }
+            }, 1000);
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+        });
+}
+
+// Function to animate moving features for east and west bound trains
+function animateTrainRoutes(eastboundUrl, westboundUrl, styleName, legendLabel, id, height) {
+    Promise.all([esriRequest(eastboundUrl, { responseType: "json" }), esriRequest(westboundUrl, { responseType: "json" })])
+        .then(responses => {
+            const eastboundFeatures = responses[0].data.features;
+            const westboundFeatures = responses[1].data.features;
+
+            //Combine east and westbound features into one array
+            const allFeatures = [...eastboundFeatures, ...westboundFeatures];
+
+            const symbol = createSymbol(styleName); // Create symbol once
+            let currentFeatureIndex = 0;
+            let movingFeatureGraphic;
+
+            // animate features
+            const animationInterval = setInterval(() => {
+                if (currentFeatureIndex < allFeatures.length) {
+                    const feature = allFeatures[currentFeatureIndex];
+                    const [longitude, latitude, featureHeight] = feature.geometry.coordinates;
+                    const time = new Date(feature.properties.datetimes[0]).toLocaleString();
+
+                    const movingFeaturePoint = new Point({
+                        x: longitude,
+                        y: latitude,
+                        z: featureHeight,
+                        spatialReference: {
+                            wkid: 4326
+                        }
+                    });
+
+                    if (!movingFeatureGraphic) {
+                        // Create the moving feature graphic for the first time
+                        movingFeatureGraphic = new Graphic({
+                            geometry: movingFeaturePoint,
+                            symbol: symbol,
+                            attributes: {
+                                time: time
+                            },
+                            popupTemplate: {
+                                title: "Time",
+                                content: "{time}"
+                            }
+                        });
+                        graphicsLayer.add(movingFeatureGraphic);
+                    } else {
+                        // update the position of the existing M_feature graphic
+                        movingFeatureGraphic.geometry = movingFeaturePoint;
+                        movingFeatureGraphic.attributes.time = time;
+                    }
+
+                    currentFeatureIndex++;
+                } else {
+                    // Reset the animation when all features have been displayed
+                    currentFeatureIndex = 0;
+                }
+            }, 1000);
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+        });
+}
+
+animateMovingFeatures("https://ogcapi.hft-stuttgart.de/ogc_api_moving_features/collections/bus_1/items", "Bus", "Bus", "busLegend", 100);
+animateMovingFeatures("https://ogcapi.hft-stuttgart.de/ogc_api_moving_features/collections/train_EastBound_WD/items", "Train", "Eastbound Train", "trainEastLegend", 500);
+animateMovingFeatures("https://ogcapi.hft-stuttgart.de/ogc_api_moving_features/collections/train_WestBound_WD/items", "Train", "Westbound Train", "trainWestLegend", 500);
+
+    document.getElementById("toggleSpaceTime").addEventListener("click", function () {
+      const spaceTimeContainer = document.getElementById("spaceTimeCubeContainer");
+      console.log("Toggle button clicked");
+      console.log("Current display style:", spaceTimeContainer.style.display);
+      spaceTimeContainer.style.display = spaceTimeContainer.style.display === "none" ? "block" : "none";
+      console.log("New display style:", spaceTimeContainer.style.display);
+
+      // If the space-time container is set to block initialize/reload the space-time visualization
+      if (spaceTimeContainer.style.display === "block") {
+        console.log("Initializing space-time visualization...");
+        animateSpaceTimeRoutes('https://ogcapi.hft-stuttgart.de/ogc_api_moving_features/collections/bus_1/items');
+      }
+    });
+
+});
+
+  function animateSpaceTimeRoute(url, containerId, trainColor, trainName) {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (!data || !data.features) {
+            console.error('Invalid data format:', data);
+            return;
+          }
+
+          const features = Array.isArray(data.features) ? data.features : [data.features];
+
+          const frames = features.map((feature, index) => {
+            const coordinates = feature.geometry.coordinates;
+            const timestamps = feature.properties.datetimes;
+
+            if (!Array.isArray(coordinates) || !Array.isArray(timestamps)) {
+              console.error('Invalid feature format:', feature);
+              return;
+            }
+
+            return {
+              data: [
+                {
+                  type: 'scattermapbox',
+                  lat: coordinates.map(coord => coord[1]),
+                  lon: coordinates.map(coord => coord[0]),
+                  mode: 'lines+markers',
+                  marker: { size: 20, color: trainColor },
+                  line: { color: trainColor },
+                  name: `Bus route`,
+                },
+                {
+                  type: 'scatter3d',
+                  x: coordinates.map(coord => coord[0]),
+                  y: coordinates.map(coord => coord[1]),
+                  z: timestamps.map((time, i) => new Date(time).toISOString()), // convert to ISO format
+                  mode: 'lines+markers',
+                  line: { color: trainColor },
+                  text: timestamps.map((time) => new Date(time).toLocaleTimeString()), // labels on the points
+                  name: `Bus Space-Time - ${index + 1}`,
+                },
+              ],
+              name: `Frame ${index + 1}`,
+            };
+          });
+
+          // Set the layout with mapbox style and access token
+          const layout = {
+            mapbox: {
+              style: 'light',
+              center: { lon: features[0].geometry.coordinates[0][0], lat: features[0].geometry.coordinates[0][1] },
+              zoom: 10,
+              accesstoken: 'pk.eyJ1IjoicmVkaWV0OTk2MyIsImEiOiJjbHJ1cmk5aGUwaDRvMmpuYWM4Z2NqcmZuIn0.c11HYT-5ucd6g6mL03bp3Q',
+            },
+            margin: { t: 0, b: 0, l: 0, r: 0 },
+
+         };
+
+          // initialize Plotly container
+          Plotly.newPlot(containerId, frames[0].data, layout);
+
+          // adding frames
+          Plotly.addFrames(containerId, frames);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    }
+
+</script>
+
+</body>
+
